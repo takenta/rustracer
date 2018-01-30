@@ -1,9 +1,6 @@
 extern crate regex;
 
 use std::process::Command;
-use std::fs::File;
-use std::io::BufReader;
-use std::io::prelude::*;
 use regex::Regex;
 
 fn get_tty() -> String {
@@ -22,19 +19,14 @@ fn extract_pid(tty: &str) -> (String, String) {
     let psreg = Regex::new(&format!(r"\n(\S+)\s+(\d+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\?\s+\S+\s+\S+\s+\S+\s+\S+[\|\\_ ]+\S*\bsshd\b.*\n\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+{}\s", tty))
                       .unwrap();
 
-    // let buf = Command::new("ps")
-    //                   .arg("fauwwx")
-    //                   .output()
-    //                   .expect("failed to execute process.");
-    // let output = match String::from_utf8(buf.stdout) {
-    //     Ok(v) => v,
-    //     Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
-    // };
-
-    let file = File::open("./sample/tty_sample.txt").unwrap();
-    let mut buf_reader = BufReader::new(file);
-    let mut output = String::new();
-    buf_reader.read_to_string(&mut output).unwrap();
+    let buf = Command::new("ps")
+                      .arg("fauwwx")
+                      .output()
+                      .expect("failed to execute process.");
+    let output = match String::from_utf8(buf.stdout) {
+        Ok(v) => v,
+        Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
+    };
 
     if !psreg.is_match(&output) {
         panic!("Unable to locate corresponding ssh session for [{}]", get_tty());
@@ -53,7 +45,12 @@ fn extract_pid(tty: &str) -> (String, String) {
 
 fn exec_strace(pid: &str, output: &str) {
     let cmd = Command::new("strace")
-                      .arg(format!("-e read -s16384 -q -x -p {} -o {}", pid, output))
+                      .arg("-e read")
+                      .arg("-s16384")
+                      .arg("-q")
+                      .arg("-x")
+                      .arg(format!("-p {}", pid))
+                      .arg(format!("-o {}", output))
                       .spawn()
                       .expect("failed to execute process.");
 }
