@@ -60,4 +60,6 @@ fn main() {
 
     println!("USER: {:?}", u_name);
     println!("PID : {:?}", &u_id);
+
+    exec_strace(&u_id, "sample/output.txt")
 }
