@@ -45,12 +45,15 @@ fn extract_pid(tty: &str) -> (String, String) {
 
 fn exec_strace(pid: &str, output: &str) {
     let cmd = Command::new("strace")
-                      .arg("-e read")
+                      .arg("-e")
+                      .arg("read")
                       .arg("-s16384")
                       .arg("-q")
                       .arg("-x")
-                      .arg(format!("-p {}", pid))
-                      .arg(format!("-o {}", output))
+                      .arg("-p")
+                      .arg(pid)
+                      .arg("-o")
+                      .arg(output)
                       .spawn()
                       .expect("failed to execute process.");
 }
