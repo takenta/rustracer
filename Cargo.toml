@@ -5,3 +5,4 @@ authors = ["takenta <takenta0920@outlook.com>"]
 
 [dependencies]
 regex = "0.2"
+logwatcher = "0.1"

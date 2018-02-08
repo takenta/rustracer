@@ -1,8 +1,10 @@
 extern crate regex;
+extern crate logwatcher;
 
 use std::process::Command;
 use std::env;
 use regex::Regex;
+use logwatcher::LogWatcher;
 
 fn get_tty() -> String {
     let output = Command::new("w")
@@ -45,18 +47,31 @@ fn extract_pid(tty: &str) -> (String, String) {
 }
 
 fn exec_strace(pid: &str, output: &str) {
-    let cmd = Command::new("strace")
-                      .arg("-e")
-                      .arg("read")
-                      .arg("-s16384")
-                      .arg("-q")
-                      .arg("-x")
-                      .arg("-p")
-                      .arg(pid)
-                      .arg("-o")
-                      .arg(output)
-                      .spawn()
-                      .expect("failed to execute process.");
+    let mut cmd = Command::new("strace")
+        .arg("-e")
+        .arg("read")
+        .arg("-s16384")
+        .arg("-q")              
+        .arg("-x")              
+        .arg("-p")              
+        .arg(pid)
+        .arg("-o")              
+        .arg(output)              
+        .spawn()
+        .expect("failed to execute process.");
+
+    let readreg = Regex::new("(read)\\(\\d+, \"(.*)\")").unwrap();
+
+    let mut watcher = LogWatcher::register(output.to_string()).unwrap();
+
+    watcher.watch(|line: String| {
+        let caps = match readreg.captures(&line) {
+            Some(cap) => cap,
+            None => panic!("Unable to locate corresponding ssh session for {}", get_tty()),
+        };
+        let ichar = caps.get(2).unwrap().as_str().to_string();
+        println!("{}", ichar);
+    });
 }
 
 fn main() {
