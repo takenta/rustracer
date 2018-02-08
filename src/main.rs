@@ -1,6 +1,7 @@
 extern crate regex;
 
 use std::process::Command;
+use std::env;
 use regex::Regex;
 
 fn get_tty() -> String {
@@ -59,7 +60,8 @@ fn exec_strace(pid: &str, output: &str) {
 }
 
 fn main() {
-    let (u_name, u_id) = extract_pid("pts/0");
+    let args: Vec<String> = env::args().collect();
+    let (u_name, u_id) = extract_pid(&args[1]);
 
     println!("USER: {:?}", u_name);
     println!("PID : {:?}", &u_id);
