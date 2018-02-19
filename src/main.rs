@@ -51,16 +51,16 @@ fn exec_strace(pid: &str, output: &str) {
         .arg("-e")
         .arg("read")
         .arg("-s16384")
-        .arg("-q")              
-        .arg("-x")              
-        .arg("-p")              
+        .arg("-q")
+        .arg("-x")
+        .arg("-p")
         .arg(pid)
-        .arg("-o")              
-        .arg(output)              
+        .arg("-o")
+        .arg(output)
         .spawn()
         .expect("failed to execute process.");
 
-    let readreg = Regex::new("(read)\\(\\d+, \"(.*)\")").unwrap();
+    let readreg = Regex::new("(read)\\(\\d+, \"(.*)\"\\)").unwrap();
 
     let mut watcher = LogWatcher::register(output.to_string()).unwrap();
 
